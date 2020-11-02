@@ -44,23 +44,36 @@
 \end{center}
 \section*{Example 1 Basic Cuda}
 \subsection*{a)}
-Seven different array length from $N = 10,100,1000,...10^7$ and its time for Malloc and Free.
+Seven different array length from $N = 10,100,1000,...10^8$ and its time for Malloc and Free.
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.50\textwidth]{Bilder/time_difference_between_Malloc_and_Free.png}
+	\includegraphics[width=0.50\textwidth]{Bilder/Time_to_allocate_and_free.png}
 	\caption{5 turn}
 \end{figure}
 I run the code seven times and document the time results.
 \begin{lstlisting}[language=C++, caption={code for a)}]
+#include <stdio.h>
+#include "timer.hpp"
+
+
+int main(void)
+{
+//N = [10,100,1000,10000,100000,1000000,10000000]
+int N = 10;
+
+double *d_x;
+Timer timer;
+
+
 timer.reset();
-// Allocate device memory and copy host data over
-cudaMalloc(&d_x, N*sizeof(double)); 
-cudaMalloc(&d_y, N*sizeof(double));
-printf("a) cudaMalloc_initTime: %g[ms] N = %d\n", 1000*timer.get(),N);
-cudaDeviceSynchronize();
-timer.reset();
+for (int i = 0;i < 100; i++)
+{
+cudaMalloc(&d_x, N*sizeof(double));
 cudaFree(d_x);
-cudaFree(d_y);
-printf("a) cudaFree_initTime: %g[ms] N = %d\n", 1000*timer.get(),N);
+}
+printf("Malloc_Free_Time: %g[ms] N = %d\n", (1000*timer.get())/100,N);
+
+return EXIT_SUCCESS;
+}
 \end{lstlisting}
 \end{document}

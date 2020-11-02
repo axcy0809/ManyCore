@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2020.4.18)  24 OCT 2020 13:16
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2020.4.18)  2 NOV 2020 07:00
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -515,13 +515,11 @@ LaTeX Font Info:    Try loading font information for U+msb on input line 47.
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-<Bilder/time_difference_between_Malloc_and_Free.png, id=4, 433.62pt x 289.08pt>
-
-File: Bilder/time_difference_between_Malloc_and_Free.png Graphic file (type png
-)
-<use Bilder/time_difference_between_Malloc_and_Free.png>
-Package pdftex.def Info: Bilder/time_difference_between_Malloc_and_Free.png  us
-ed on input line 50.
+<Bilder/Time_to_allocate_and_free.png, id=4, 433.62pt x 289.08pt>
+File: Bilder/Time_to_allocate_and_free.png Graphic file (type png)
+<use Bilder/Time_to_allocate_and_free.png>
+Package pdftex.def Info: Bilder/Time_to_allocate_and_free.png  used on input li
+ne 50.
 (pdftex.def)             Requested size: 234.73524pt x 156.49344pt.
 
 (/usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
@@ -535,14 +533,21 @@ File: lstmisc.sty 2019/02/27 1.8b (Carsten Heinz)
 )
 Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
 nput line 54.
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 57.
+LaTeX Font Info:    Try loading font information for OML+cmr on input line 55.
+
+(/usr/share/texlive/texmf-dist/tex/latex/base/omlcmr.fd
+File: omlcmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OML/cmr/m/n' in size <10.95> not available
+(Font)              Font shape `OML/cmm/m/it' tried instead on input line 55.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 60.
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10.95> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 57.
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 66.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 60.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 79.
 
 
 Package Fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -552,11 +557,11 @@ This may cause the page layout to be inconsistent, however.
 
 [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
 
- <./Bilder/time_difference_between_Malloc_and_Free.png>]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 66.
+ <./Bilder/Time_to_allocate_and_free.png>]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 79.
  (./Exercise2.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 66.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 66.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 79.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 79.
 Package rerunfilecheck Info: File `Exercise2.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
 
@@ -567,26 +572,26 @@ LaTeX Font Warning: Size substitutions with differences
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 66.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 79.
  ) 
 Here is how much of TeX's memory you used:
- 9591 strings out of 492609
- 134458 string characters out of 6131462
- 429633 words of memory out of 5000000
- 13369 multiletter control sequences out of 15000+600000
+ 9636 strings out of 492609
+ 134993 string characters out of 6131462
+ 433633 words of memory out of 5000000
+ 13398 multiletter control sequences out of 15000+600000
  10713 words of font info for 40 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 34i,11n,60p,276b,1432s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 34i,11n,60p,276b,1441s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texl
 ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/tex
 mf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/
 fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on Exercise2.pdf (1 page, 80509 bytes).
+Output written on Exercise2.pdf (1 page, 81657 bytes).
 PDF statistics:
- 57 PDF objects out of 1000 (max. 8388607)
- 45 compressed objects within 1 object stream
- 16 named destinations out of 1000 (max. 500000)
+ 72 PDF objects out of 1000 (max. 8388607)
+ 60 compressed objects within 1 object stream
+ 29 named destinations out of 1000 (max. 500000)
  6 words of extra memory for PDF output out of 10000 (max. 10000000)
 
