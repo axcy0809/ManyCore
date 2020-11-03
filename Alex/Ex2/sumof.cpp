@@ -13,8 +13,9 @@ __global__ void SumOfVectors(double *x, double *y, double *z, int N)
 
 int main (void)
 {
-    int N = 100;
-    int s = 16
+    int N = 10000000;
+    int s = 16;
+    int anz = 10;
     double *x, *y, *z, *d_x, *d_y, *d_z;
     Timer timer;
 
@@ -39,13 +40,14 @@ int main (void)
 
     cudaDeviceSynchronize();
     timer.reset();
-
-    SumOfVectors<<<s, s>>>(d_x, d_y, d_z, N);
-    cudaDeviceSynchronize();
-
+    for (int i = 0; i < anz; i++)
+    {
+        SumOfVectors<<<s, s>>>(d_x, d_y, d_z, N);
+        cudaDeviceSynchronize();
+    }
     cudaMemcpy(z, d_z, N*sizeof(double), cudaMemcpyDeviceToHost);
 
-    printf("SumTime: %g[ms]\n", (1000*timer.get()));
+    printf("SumTime: %g[ms]\n", (1000*timer.get())/anz);
     printf("FirstEntrieOfSumVec: %f\n",z[N]);
 
 
