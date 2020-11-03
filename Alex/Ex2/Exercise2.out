@@ -1,5 +1,0 @@
-\BOOKMARK [1][-]{section.1}{Example 2 Dot Product}{}% 1
-\BOOKMARK [2][-]{subsection.1.1}{a\) use two GPUs}{section.1}% 2
-\BOOKMARK [2][-]{subsection.1.2}{b\) use a GPU and the CPU}{section.1}% 3
-\BOOKMARK [2][-]{subsection.1.3}{c\) use atomicAdd}{section.1}% 4
-\BOOKMARK [2][-]{subsection.1.4}{explenarision}{section.1}% 5

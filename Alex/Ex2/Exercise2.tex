@@ -43,12 +43,13 @@
 	\textsc{\textbf{Computational Science on Many-Core Architectures  Exercise 2}}
 \end{center}
 \section*{Example 1 Basic Cuda}
-\subsection*{a)}
-Seven different array length from $N = 10,100,1000,...10^8$ and its time for Malloc and Free.
+\subsection*{a) init array}
+For the first point I used 8 different array sizes from $N
+= 10,100,1000,...10^8$ and measures it's time to Malloc
+and Free them.
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.70\textwidth]{Bilder/Time_to_allocate_and_free.png}
-	\caption{5 turn}
+	\includegraphics[width=0.65\textwidth]{Bilder/Time_to_allocate_and_free.png}
 \end{figure}
 I run the code seven times and document the time results.
 \begin{lstlisting}[language=C++, caption={code for a)}]
@@ -71,9 +72,20 @@ int main(void)
 return EXIT_SUCCESS;
 }
 \end{lstlisting}
+For this meassure I get a dipendence of $O(1)$ linear behavior.
 \newpage
 \subsection*{b) Init by kernel}
-\begin{lstlisting}[language=C++, caption={code for a)}]
+The calculation the effective bandwidth looks like this:
+\begin{align*}
+Bw_{ef} = \frac{N \times 8bytes}{t}
+\end{align*} 
+where $N$ is the number of elements of the array. The $8bytes$ stands for the individual double element.\\
+In total the results for the different methods are:\\
+Init by kernel: : $32.188$[ms] for $N = 1e6$ $\rightarrow 248.53\frac{Mbytes}{s}$ \\
+Init by cudaMemcopy: $11.015$[ms] for $N = 1e6$ $\rightarrow 726.28\frac{Mbytes}{s}$ \\ 
+Init by individual: $41729.4$[ms] for $N = 1e3$ $\rightarrow 1.917*10^{-4}\frac{Mbytes}{s}$ \\
+For the last one I really do not know why it took so long.
+\begin{lstlisting}[language=C++, caption={code for b)}]
 #include <stdio.h>
 #include "timer.hpp"
 
@@ -93,7 +105,6 @@ __global__ void init_kernel(int N)
 		y[i] = N-i-1;
 	}
 }
-
 int main(void)
 {
 	int N = 1000000;
@@ -113,7 +124,7 @@ return EXIT_SUCCESS;
 \end{lstlisting}
 \newpage
 \subsection*{b) Init by cudaMemcopy}
-\begin{lstlisting}[language=C++, caption={code for a)}]
+\begin{lstlisting}[language=C++, caption={code for b)}]
 # include <stdio.h>
 # include "timer.hpp"
 
@@ -154,7 +165,7 @@ return EXIT_SUCCESS;
 \end{lstlisting}
 \newpage
 \subsection*{b) Init by individual element cudaMemcopy}
-\begin{lstlisting}[language=C++, caption={code for a)}]
+\begin{lstlisting}[language=C++, caption={code for b)}]
 # include <stdio.h>
 # include "timer.hpp"
 
@@ -198,10 +209,10 @@ return EXIT_SUCCESS;
 //41729.4[ms] N = 1000
 }
 \end{lstlisting}
-For that point I only test the program with $N = 1000$ to reduce the time to ran the program. It is clear that this method is way slower than the other two.
+For that point I only test the program with $N = 1000$ to reduce the time to run the program. It is clear that this method is way slower than the other two.
 \newpage
 \subsection*{c) Kernel to sum up two vectors}
-\begin{lstlisting}[language=C++, caption={code for a)}]
+\begin{lstlisting}[language=C++, caption={code for c)}]
 # include <stdio.h>
 # include "timer.hpp"
 
@@ -263,7 +274,7 @@ return EXIT_SUCCESS;
 }
 \end{lstlisting}
 \subsection*{d) Kernel to sum up two vectors with different N}
-\begin{lstlisting}[language=C++, caption={code for a)}]
+\begin{lstlisting}[language=C++, caption={code for d)}]
 # include <stdio.h>
 # include "timer.hpp"
 
@@ -328,12 +339,14 @@ return EXIT_SUCCESS;
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.70\textwidth]{Bilder/Time_to_Sum.png}
-	\caption{5 turn}
 \end{figure}
-The time differenz between small number of $N$ and a large number of $N$ is very small $ 2.5$[ms]. I would expact a larger timedifferenz.
+The time difference between small number of $N$
+and a large number of $N$
+is very small $ 2
+.5$[ms]. I would expect a larger time difference.
 \newpage
 \subsection*{e) Different size of blocks and grid}
-\begin{lstlisting}[language=C++, caption={code for a)}]
+\begin{lstlisting}[language=C++, caption={code for e)}]
 # include <stdio.h>
 # include "timer.hpp"
 
@@ -396,12 +409,12 @@ return EXIT_SUCCESS;
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.80\textwidth]{Bilder/Diff_size.png}
-	\caption{5 turn}
 \end{figure}
-There is nearly no time saving after a number of grid and block size of $64$. So the jump from $16$ to $32$ is ruffly $90$ms timesave.
+There is nearly no time saving after a number of grid and block size of $64$. So the jump from $16$ to $32$ is ruffly $90$ms time save.
 \newpage
-\section{Example 2 Dot Product}
-\subsection{a) use two GPUs}
+\section*{Example 2 Dot Product}
+To start with this code I orientated me at the following source\footnote{\url{https://bitbucket.org/jsandham/algorithms_in_cuda/src/master/dot_product/}}.
+\subsection*{a) use two GPUs}
 \begin{lstlisting}[language=C++, caption={code for a)}]
 # include <stdio.h>
 # include "timer.hpp"
@@ -486,8 +499,7 @@ int main (void)
 	}
 	cudaMemcpy(prod, d_prod, sizeof(double), cudaMemcpyDeviceToHost);
 	
-	printf("Time: %g[ms] result: %f\n", (1000*timer.get())/anz,*prod);
-	
+	printf("Time: %g[ms] result: %f\n", (1000*timer.get())/anz,*prod);	
 	cudaFree(d_px);
 	cudaFree(d_py);
 	cudaFree(d_prod);
@@ -497,7 +509,7 @@ int main (void)
 return EXIT_SUCCESS;
 }
 \end{lstlisting}
-\subsection{b) use a GPU and the CPU}
+\subsection*{b) use a GPU and the CPU}
 \begin{lstlisting}[language=C++, caption={code for a)}]
 # include <stdio.h>
 # include "timer.hpp"
@@ -595,7 +607,7 @@ return EXIT_SUCCESS;
 }
 \end{lstlisting}
 \newpage
-\subsection{c) use atomicAdd}
+\subsection*{c) use atomicAdd}
 \begin{lstlisting}[language=C++, caption={code for a)}]
 # include <stdio.h>
 # include "timer.hpp"
@@ -684,11 +696,10 @@ int main (void)
 return EXIT_SUCCESS;
 }
 \end{lstlisting}
-\subsection{explenarision}
+\subsection*{explenarision}
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.80\textwidth]{Bilder/Dot_Prod.png}
-	\caption{5 turn}
 \end{figure}
-In the end all three diferent methods needs approxematily the same amount of time. I think the third method should be the fastest method.
+In the end all three different methods needs approximately the same amount of time. I think the third method should be the fastest method.
 \end{document}
