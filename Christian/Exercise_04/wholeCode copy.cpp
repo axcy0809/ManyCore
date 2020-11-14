@@ -4,7 +4,7 @@
 #include <cmath>
 #include <iostream>
  
- __global__ void cuda_many_dot_product(int N, double *x, double **y, double *result)
+ __global__ void cuda_many_dot_product(int N, double *x, double *y0, double *y1, double *y2, double *y3, double *y4, double *y5, double *y6, double *y7, double *result)
 {
   __shared__ double shared_mem_0[512];
   __shared__ double shared_mem_1[512];
@@ -26,14 +26,14 @@
 
   for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < N; i += blockDim.x * gridDim.x) {
     double val = x[i];
-    dot_0 += val * y[0][i];
-    dot_1 += val * y[1][i];
-    dot_2 += val * y[2][i];
-    dot_3 += val * y[3][i];
-    dot_4 += val * y[4][i];
-    dot_5 += val * y[5][i];
-    dot_6 += val * y[6][i];
-    dot_7 += val * y[7][i];
+    dot_0 += val * y0[i];
+    dot_1 += val * y1[i];;
+    dot_2 += val * y2[i];;
+    dot_3 += val * y3[i];;
+    dot_4 += val * y4[i];;
+    dot_5 += val * y5[i];;
+    dot_6 += val * y6[i];;
+    dot_7 += val * y7[i];;
   }
  
   shared_mem_0[threadIdx.x] = dot_0;
@@ -102,11 +102,17 @@ int main(void)
     //
     std::cout << "Allocating CUDA arrays..." << std::endl;
     double *cuda_x; cudaMalloc( (void **)(&cuda_x), sizeof(double)*N);
+    double *cuda_y0; cudaMalloc( (void **)(&cuda_y0), sizeof(double)*N);
+    double *cuda_y1; cudaMalloc( (void **)(&cuda_y1), sizeof(double)*N);
+    double *cuda_y2; cudaMalloc( (void **)(&cuda_y2), sizeof(double)*N);
+    double *cuda_y3; cudaMalloc( (void **)(&cuda_y3), sizeof(double)*N);
+    double *cuda_y4; cudaMalloc( (void **)(&cuda_y4), sizeof(double)*N);
+    double *cuda_y5; cudaMalloc( (void **)(&cuda_y5), sizeof(double)*N);
+    double *cuda_y6; cudaMalloc( (void **)(&cuda_y6), sizeof(double)*N);
+    double *cuda_y7; cudaMalloc( (void **)(&cuda_y7), sizeof(double)*N);
     double *cuda_results2; cudaMalloc( (void **)(&cuda_results2), sizeof(double)*K);
-    double **cuda_y = (double**)malloc(sizeof(double*) * K);  // storing CUDA pointers on host!
-    for (size_t i=0; i<K; ++i) {
-      cudaMalloc( (void **)(&cuda_y[i]), sizeof(double)*N);
-    }
+
+   
  
     //
     // fill host arrays with values
@@ -136,10 +142,18 @@ int main(void)
     //
     std::cout << "Copying data to GPU..." << std::endl;
     cudaMemcpy(cuda_x, x, sizeof(double)*N, cudaMemcpyHostToDevice);
+    cudaMemcpy(cuda_y0, y[0], sizeof(double)*N, cudaMemcpyHostToDevice);
+    cudaMemcpy(cuda_y1, y[1], sizeof(double)*N, cudaMemcpyHostToDevice);
+    cudaMemcpy(cuda_y2, y[2], sizeof(double)*N, cudaMemcpyHostToDevice);
+    cudaMemcpy(cuda_y3, y[3], sizeof(double)*N, cudaMemcpyHostToDevice);
+    cudaMemcpy(cuda_y4, y[4], sizeof(double)*N, cudaMemcpyHostToDevice);
+    cudaMemcpy(cuda_y5, y[5], sizeof(double)*N, cudaMemcpyHostToDevice);
+    cudaMemcpy(cuda_y6, y[6], sizeof(double)*N, cudaMemcpyHostToDevice);
+    cudaMemcpy(cuda_y7, y[7], sizeof(double)*N, cudaMemcpyHostToDevice);
     cudaMemcpy(cuda_results2, results2, sizeof(double)*K, cudaMemcpyHostToDevice);
-    for (size_t i=0; i<K; ++i) {
-      cudaMemcpy(cuda_y[i], y[i], sizeof(double)*N, cudaMemcpyHostToDevice);
-    }
+    //for (size_t i=0; i<K; ++i) {
+    //  cudaMemcpy(cuda_y[i*N], y[i], sizeof(double)*N, cudaMemcpyHostToDevice);
+    //}
  
  
     //
@@ -148,9 +162,16 @@ int main(void)
     std::cout << "Running dot products with CUBLAS..." << std::endl;
     for (size_t i=0; i<K; ++i) {
       //cublasDdot(h, N, cuda_x, 1, cuda_y[i], 1, results2 + i);
-      
     }
-    cuda_many_dot_product<<<512, 512>>>(N, cuda_x, cuda_y, cuda_results2);
+    cudaMemcpy(cuda_y0, y[0], sizeof(double)*N, cudaMemcpyHostToDevice);
+    cudaMemcpy(cuda_y1, y[1], sizeof(double)*N, cudaMemcpyHostToDevice);
+    cudaMemcpy(cuda_y2, y[2], sizeof(double)*N, cudaMemcpyHostToDevice);
+    cudaMemcpy(cuda_y3, y[3], sizeof(double)*N, cudaMemcpyHostToDevice);
+    cudaMemcpy(cuda_y4, y[4], sizeof(double)*N, cudaMemcpyHostToDevice);
+    cudaMemcpy(cuda_y5, y[5], sizeof(double)*N, cudaMemcpyHostToDevice);
+    cudaMemcpy(cuda_y6, y[6], sizeof(double)*N, cudaMemcpyHostToDevice);
+    cudaMemcpy(cuda_y7, y[7], sizeof(double)*N, cudaMemcpyHostToDevice);
+    cuda_many_dot_product<<<512, 512>>>(N, cuda_x, cuda_y0, cuda_y1, cuda_y2, cuda_y3, cuda_y4, cuda_y5, cuda_y6, cuda_y7, cuda_results2);
 
     // Get back the results
 
@@ -174,10 +195,10 @@ int main(void)
  
     for (size_t i=0; i<K; ++i) {
       free(y[i]);
-      cudaFree(cuda_y[i]);
+      //cudaFree(cuda_y[i]);
     }
     free(y);
-    free(cuda_y);
+    //free(cuda_y);
  
     free(results);
     free(results2);
