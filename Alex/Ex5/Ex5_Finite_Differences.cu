@@ -4,7 +4,8 @@
 #include <iostream>
 #include <stdio.h>
 #include <fstream>
- 
+
+/////////////////////////////// GD functions from the 4.Exercise /////////////////////////////////////////////////////////////////////////////
 __global__ void cuda_csr_matvec_product(int N, int *csr_rowoffsets,
     int *csr_colindices, double *csr_values,
     double *x, double *y)
@@ -60,23 +61,14 @@ __global__ void cuda_dot_product(int N, double *x, double *y, double *result)
 }
 
 
-
-/** Implementation of the conjugate gradient algorithm.
- *
- *  The control flow is handled by the CPU.
- *  Only the individual operations (vector updates, dot products, sparse
- * matrix-vector product) are transferred to CUDA kernels.
- *
- *  The temporary arrays p, r, and Ap need to be allocated on the GPU for use
- * with CUDA. Modify as you see fit.
- */
+/////////////////////////////// Setup for exclusive scan /////////////////////////////////////////////////////////////////////////////
  
 __global__ void scan_kernel_1(int const *X,
                               int *Y,
                               int N,
                               int *carries)
 {
-  __shared__ int shared_buffer[256];
+  __shared__ int shared_buffer[512];
   int my_value;
  
   unsigned int work_per_thread = (N - 1) / (gridDim.x * blockDim.x) + 1;
@@ -122,7 +114,7 @@ __global__ void scan_kernel_1(int const *X,
 // exclusive-scan of carries
 __global__ void scan_kernel_2(int *carries)
 {
-  __shared__ int shared_buffer[256];
+  __shared__ int shared_buffer[512];
 
  
   // load data:
@@ -166,7 +158,9 @@ __global__ void scan_kernel_3(int *Y, int N,
       Y[i] += shared_offset;
 }
 
-__global__ void count_nnz(int* row_offsets, int N, int M) {
+/////////////////////////////// nonzero count function /////////////////////////////////////////////////////////////////////////////
+
+__global__ void count_nonzero_entries(int* row_offsets, int N, int M) {
     for(int row = blockDim.x * blockIdx.x + threadIdx.x; row < N * M; row += gridDim.x * blockDim.x) {
         int nnz_for_this_node = 1;
         int i = row / N;
@@ -181,8 +175,9 @@ __global__ void count_nnz(int* row_offsets, int N, int M) {
     }
 }
 
+/////////////////////////////// GPU assemble /////////////////////////////////////////////////////////////////////////////
 
-__global__ void populate_values(double* values, int* columns, int* row_offsets, int N, int M) {
+__global__ void assemble_A_GPU(double* values, int* columns, int* row_offsets, int N, int M) {
     for(int row = blockDim.x * blockIdx.x + threadIdx.x; row < N*M; row += gridDim.x * blockDim.x) {
         int i = row / N;
         int j = row % N;
@@ -218,12 +213,51 @@ __global__ void populate_values(double* values, int* columns, int* row_offsets, 
     }
 }
 
+/////////////////////////////// CPU assemble /////////////////////////////////////////////////////////////////////////////
+
+void assemble_A_CPU(double* values, int* columns, int* row_offsets, int N, int M) {
+  for(int row = 0; row < N*M; row++) {
+      int i = row / N;
+      int j = row % N;
+      int counter = 0;
+
+      if ( i > 0) {
+          values[(int)row_offsets[row] + counter] = -1;
+          columns[(int)row_offsets[row] + counter] = (i-1)*N+j;
+          counter++;
+      }
+      
+      if ( j > 0) {
+          values[(int)row_offsets[row] + counter] = -1;
+          columns[(int)row_offsets[row] + counter] = i*N+(j-1);
+          counter++;
+      }
+
+      values[(int)row_offsets[row] + counter] = 4;
+      columns[(int)row_offsets[row] + counter] = i*N+j;
+
+      counter++;
+
+      if ( j < M-1) {
+          values[(int)row_offsets[row] + counter] = -1;
+          columns[(int)row_offsets[row] + counter] = i*N+(j+1);
+          counter++;
+      }
+      if ( i < N-1) {
+          values[(int)row_offsets[row] + counter] = -1;
+          columns[(int)row_offsets[row] + counter] = (i+1)*N+j;
+          counter++;
+      }
+  }
+}
+
+/////////////////////////////// given exclusive scan /////////////////////////////////////////////////////////////////////////////
  
 void exclusive_scan(int const * input,
                     int       * output, int N)
 {
-  int num_blocks = 256;
-  int threads_per_block = 256;
+  int num_blocks = 512;
+  int threads_per_block = 512;
  
   int *carries;
   cudaMalloc(&carries, sizeof(int) * num_blocks);
@@ -240,15 +274,8 @@ void exclusive_scan(int const * input,
   cudaFree(carries);
 }
  
- 
- 
- template <typename T>
- void printContainer(T container, int N) {
-     for (int i = 0; i < N; i++) 
-     {
-         std::cout << container[i] << " | ";
-     }
- }
+
+ /////////////////////////////// GD functions from the 4.Exercise /////////////////////////////////////////////////////////////////////////////
  
  void conjugate_gradient(int N, // number of unknows
   int *csr_rowoffsets, int *csr_colindices,
@@ -335,7 +362,10 @@ void exclusive_scan(int const * input,
   std::cout << "Conjugate Gradient converged in " << iters << " iterations."
   << std::endl;
 
-  int ck = 0;
+  /////////////////////////////// ineffizient output only for the bonuspoint part /////////////////////////////////////////////////////////////////////////////
+
+/*
+  int ck = 0; 
   for (int i = 0; i < N/max; i++)
   {
     for (int j = 0; j < N/max; j++)
@@ -349,10 +379,7 @@ void exclusive_scan(int const * input,
     std::cout << " " << std::endl;
     std::cout << " " << std::endl;
   }
-    
-  
- 
-  
+  */
 
 
 
@@ -363,41 +390,13 @@ void exclusive_scan(int const * input,
   cudaFree(cuda_scalar);
 }
 
+ /////////////////////////////// GD functions from the 4.Exercise /////////////////////////////////////////////////////////////////////////////
 
 /** Solve a system with `points_per_direction * points_per_direction` unknowns
  */
  void solve_system(int x_dim, int y_dim, int* csr_rowoffsets, double* csr_values, int* csr_colindices, int max) {
 
   int N = x_dim * y_dim;
-
-/*
-  int N = points_per_direction *
-          points_per_direction; // number of unknows to solve for
-
-  std::cout << "Solving Ax=b with " << N << " unknowns." << std::endl;
-
-  //
-  // Allocate CSR arrays.
-  //
-  // Note: Usually one does not know the number of nonzeros in the system matrix
-  // a-priori.
-  //       For this exercise, however, we know that there are at most 5 nonzeros
-  //       per row in the system matrix, so we can allocate accordingly.
-  //
-  int *csr_rowoffsets = (int *)malloc(sizeof(double) * (N + 1));
-  int *csr_colindices = (int *)malloc(sizeof(double) * 5 * N);
-  double *csr_values = (double *)malloc(sizeof(double) * 5 * N);
-
-  int *cuda_csr_rowoffsets, *cuda_csr_colindices;
-  double *cuda_csr_values;
-  //
-  // fill CSR matrix with values
-  //
-  generate_fdm_laplace(points_per_direction, csr_rowoffsets, csr_colindices,
-                       csr_values);
-
-*/
-
   int *cuda_csr_rowoffsets, *cuda_csr_colindices; 
   double *cuda_csr_values;
 
@@ -442,31 +441,19 @@ void exclusive_scan(int const * input,
 }
 
  
-int main() {
- 
+int main() 
+{
   int N = 3;
   int M = N; //quadratic matrix
 
+  Timer timer;
 
-  std::ofstream myfile;
-  myfile.open ("https://gtx1080.360252.org/2020/ex5/example.csv");
-  myfile << "This is the first cell in the first column.\n";
-  myfile << "a,b,c,\n";
-  myfile << "c,s,v,\n";
-  myfile << "1,2,3.456\n";
-  myfile << "semi;colon";
-  myfile.close();
-
-
-  //solve_system(N,M);
-  
- 
   //
   // Allocate host arrays for reference
   //
   int *row_offsets = (int *)malloc(sizeof(int) * (N*M+1));
-  
- 
+
+
   //
   // Allocate CUDA-arrays
   //
@@ -477,16 +464,12 @@ int main() {
 
   cudaMalloc(&cuda_row_offsets, sizeof(int) * (N*M+1));
   cudaMalloc(&cuda_row_offsets_2, sizeof(int) * (N*M+1));
- 
- 
+
+
   // Perform the calculations
-  count_nnz<<<256, 256>>>(cuda_row_offsets, N, M);
+  count_nonzero_entries<<<512, 512>>>(cuda_row_offsets, N, M);
   exclusive_scan(cuda_row_offsets, cuda_row_offsets_2, N*M+1);
   cudaMemcpy(row_offsets, cuda_row_offsets_2, sizeof(int) * (N*M+1), cudaMemcpyDeviceToHost);
-
-  //printContainer(row_offsets, N*M+1);
-  std::cout << std::endl;
-
 
   int numberOfValues = (int)row_offsets[N*M];
   double *values = (double *)malloc(sizeof(double) * numberOfValues);
@@ -494,20 +477,23 @@ int main() {
   cudaMalloc(&cuda_values, sizeof(double) * numberOfValues);
   cudaMalloc(&cuda_columns, sizeof(int) * numberOfValues);
 
-  populate_values<<<256, 256>>>(cuda_values, cuda_columns, cuda_row_offsets_2, N, M);
+   /////////////////////////////// Benchmark the time GPU /////////////////////////////////////////////////////////////////////////////
+
+  timer.reset();
+  assemble_A_GPU<<<512, 512>>>(cuda_values, cuda_columns, cuda_row_offsets_2, N, M);
+  std::cout << "Time to assemble on GPU: " << timer.get() <<  std::endl;
   cudaMemcpy(values, cuda_values, sizeof(double) * numberOfValues, cudaMemcpyDeviceToHost);
   cudaMemcpy(columns, cuda_columns, sizeof(int) * numberOfValues, cudaMemcpyDeviceToHost);
 
+  /////////////////////////////// Benchmark the time CPU /////////////////////////////////////////////////////////////////////////////
 
-
-  //printContainer(values, numberOfValues);
-  std::cout << std::endl;
-  //printContainer(columns, numberOfValues);
-
+  //timer.reset();
+  //assemble_A_CPU(values, columns, row_offsets, N, M);
+  //std::cout << "Time to assemble on CPU: " << timer.get() <<  std::endl;
 
   solve_system(N, M, row_offsets, values, columns, N);
- 
- 
+
+
   //
   // Clean up:
   //

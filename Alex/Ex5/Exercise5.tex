@@ -53,7 +53,7 @@
 \end{center}
 For the first kernel "kernel\_1" and simulate it with 4 blocks and 6 threads per block.\\
 Begin with line 24: the for loop iterates over the values X which belong to the block.\\
-At the end of the for loop $\rightarrow$ write the temperaryy result of the scan into a vector Ya nd the offset stored in block\_offset. At the end of the kernel every block containes ist scannes value and the vector for the next step.
+At the end of the for loop $\rightarrow$ write the temporary result of the scan into a vector Y and the offset stored in block\_offset. At the end of the kernel every block contains it scanned value and the vector for the next step.
 \begin{center}
 	
 	\begin{minipage}[t]{0.40\textwidth}
@@ -72,9 +72,10 @@ At the end of the for loop $\rightarrow$ write the temperaryy result of the scan
 
 \subsection*{b)}
 \begin{lstlisting}[language=C++, caption={kernel for inclusive\_scan)}]
-__global__ void makeInclusive(double *Y, int N, const double *X)
+__global__ void Inclusive(double *Y, int N, const double *X)
 {
-	for (int i = blockDim.x * blockIdx.x + threadIdx.x; i < N-1; i += gridDim.x * blockDim.x) 
+	for (int i = blockDim.x * blockIdx.x + threadIdx.x; i < N-1; 
+	i += gridDim.x * blockDim.x) 
 	{
 		Y[i] = Y[i+1];
 	}
@@ -82,7 +83,8 @@ __global__ void makeInclusive(double *Y, int N, const double *X)
 		// First step: Scan within each thread group and write carries
 	scan_kernel_1<<<num_blocks, threads_per_block>>>(input, output, N, carries);
 	
-	// Second step: Compute offset for each thread group (exclusive scan for each thread group)
+	// Second step: Compute offset for each thread group 
+	(exclusive scan for each thread group)
 	scan_kernel_2<<<1, num_blocks>>>(carries);
 	
 	// Third step: Offset each thread group accordingly
@@ -92,15 +94,15 @@ __global__ void makeInclusive(double *Y, int N, const double *X)
 	makeInclusive<<<num_blocks, threads_per_block>>>(output, N, input);
 	
 	cudaFree(carries);
-	}{
+	{
 		Y[N-1] += X[N-1];
 	}		
 }
 
 void exclusive_scan(double const * input, double* output, int N)
 {
-	int num_blocks = 256;
-	int threads_per_block = 256;
+	int num_blocks = 512;
+	int threads_per_block = 512;
 
 	double *carries;
 	cudaMalloc(&carries, sizeof(double) * num_blocks);
@@ -108,7 +110,8 @@ void exclusive_scan(double const * input, double* output, int N)
 	// First step: Scan within each thread group and write carries
 	scan_kernel_1<<<num_blocks, threads_per_block>>>(input, output, N, carries);
 	
-	// Second step: Compute offset for each thread group (exclusive scan for each thread group)
+	// Second step: Compute offset for each thread group 
+	(exclusive scan for each thread group)
 	scan_kernel_2<<<1, num_blocks>>>(carries);
 	
 	// Third step: Offset each thread group accordingly
@@ -123,7 +126,8 @@ void exclusive_scan(double const * input, double* output, int N)
 \subsection*{c)}
 Only nessesary to remove the folloing code snipped:
 \begin{lstlisting}[language=C++, caption={kernel for inclusive\_scan)}]
-// exclusive scan requires us to write a zero value at the beginning of each block
+// exclusive scan requires us to write a zero value
+at the beginning of each block
 my_value = (threadIdx.x > 0) ? shared_buffer[threadIdx.x - 1] : 0;
 \end{lstlisting}
 \subsection*{d)}
@@ -134,13 +138,145 @@ my_value = (threadIdx.x > 0) ? shared_buffer[threadIdx.x - 1] : 0;
 	\end{minipage}
 	
 \end{center}
-There are bassicaly no differences.
+There is bassicaly no differences.
+\newpage
 \section*{2 Poisson equation (5 Points)}
+First I have to change all row\_offsets, indices to an int datatype because there was an error with the matching datatype for the residual\_norm function in "poisson2D.hpp".
+\subsection*{a)}
+\begin{lstlisting}[language=C++, caption={kernel for serching for zeros)}]
+__global__ void count_nonzero_entries(int* row_offsets, int N, int M) {
+	for(int row = blockDim.x * blockIdx.x + threadIdx.x; row < N * M;
+	 row += gridDim.x * blockDim.x) {
+		int nnz_for_this_node = 1;
+		int i = row / N;
+		int j = row % N;
+		
+		if(i > 0) nnz_for_this_node += 1;
+		if(j > 0) nnz_for_this_node += 1;
+		if(i < N-1) nnz_for_this_node += 1;
+		if(j < M-1) nnz_for_this_node += 1;
+		
+		row_offsets[row] = nnz_for_this_node;
+	}
+}
+\end{lstlisting}
+\subsection*{b)}
+Again changed the double const *input to a int const * input.
+\begin{lstlisting}[language=C++, caption={given exclusive scan)}]
+void exclusive_scan(int const * input,
+int       * output, int N)
+{
+	int num_blocks = 512;
+	int threads_per_block = 512;
+	
+	int *carries;
+	cudaMalloc(&carries, sizeof(int) * num_blocks);
+	
+	// First step: Scan within each thread group and write carries
+	scan_kernel_1<<<num_blocks, threads_per_block>>>(input, output, N, carries);
+	
+	// Second step: Compute offset for each thread group (exclusive scan for each thread group)
+	scan_kernel_2<<<1, num_blocks>>>(carries);
+	
+	// Third step: Offset each thread group accordingly
+	scan_kernel_3<<<num_blocks, threads_per_block>>>(output, N, carries);
+	
+	cudaFree(carries);
+}
+\end{lstlisting}
+\subsection*{c)}
+\begin{lstlisting}[language=C++, caption={assemble the matrix A)}]
+__global__ void assemble_A_GPU(double* values, int* columns, int* row_offsets, int N, int M) 
+{
+	for(int row = blockDim.x * blockIdx.x + threadIdx.x; 
+	row < N*M; row += gridDim.x * blockDim.x) 
+	{
+		int i = row / N;
+		int j = row % N;
+		int counter = 0;
+		
+		if ( i > 0) 
+		{
+			values[(int)row_offsets[row] + counter] = -1;
+			columns[(int)row_offsets[row] + counter] = (i-1)*N+j;
+			counter++;
+		}
+		
+		if ( j > 0) 
+		{
+			values[(int)row_offsets[row] + counter] = -1;
+			columns[(int)row_offsets[row] + counter] = i*N+(j-1);
+			counter++;
+		}
+		
+		values[(int)row_offsets[row] + counter] = 4;
+		columns[(int)row_offsets[row] + counter] = i*N+j;
+		
+		counter++;
+		
+		if ( j < M-1) 
+		{
+			values[(int)row_offsets[row] + counter] = -1;
+			columns[(int)row_offsets[row] + counter] = i*N+(j+1);
+			counter++;
+		}
+		if ( i < N-1) 
+		{
+			values[(int)row_offsets[row] + counter] = -1;
+			columns[(int)row_offsets[row] + counter] = (i+1)*N+j;
+			counter++;
+		}
+	}
+}
+\end{lstlisting}
+\newpage
+\subsection*{d)}
+Just adapt the GD program that you gave us and changed the names from the row\_offsets.\\
+Code is in the appendix in the mail.
+\subsection*{e)}
+Simply replace the conditions for the loop in the assembling kernel with this.\\
+Code is in the appendix in the mail.
+\begin{lstlisting}[language=C++, caption={kernel for serching for zeros)}]
+for(int row = 0; row < N*M; row++)
+\end{lstlisting}
+
+\begin{minipage}[t]{0.49\textwidth}
+	\includegraphics[width=\textwidth]{Bilder/runtime_GPU_vs_CPU}
+\end{minipage}
+\begin{minipage}[t]{0.49\textwidth}
+	\includegraphics[width=\textwidth]{Bilder/runtime_assemble_GPU_vs_assemble_CPU}
+\end{minipage}
+
+\noindent
+In total the differences are not that much. Maybe for higher dimensions of the matrix $A$ but I got an SEGMENTATION FAULT at a certain point of the benchmark $N > 800$. I tried to change int into a long int but then I got also some errors. I think the difference should be much higher for bigger dimensions of $A$.
+\newpage
+\subsection*{f) Bonus point}
+Very ineffective way to get the results for the plotting. The two for loops outputs the first line of the solution matrix. 
+\begin{lstlisting}[language=C++, caption={kernel for serching for zeros)}]
+int ck = 0; 
+for (int i = 0; i < N/max; i++)
+{
+	for (int j = 0; j < N/max; j++)
+	{
+		std::cout << solution[ck] << "," << std::endl;
+		ck = ck + 1;
+	}
+	std::cout << " " << std::endl;  
+	std::cout << " " << std::endl;
+	std::cout << " " << std::endl;
+	std::cout << " " << std::endl;
+	std::cout << " " << std::endl;
+}
+\end{lstlisting}
+I copied the output by hand in python and plot it with the function "heat\_map". The dimension of the solution is $16\times16$ so in total 256 unknowns. The result looks nice. It is obviously the solution to the poisson equation.   
 \begin{center}
 	
-	\begin{minipage}[t]{0.70\textwidth}
+	\begin{minipage}[t]{1\textwidth}
 		\includegraphics[width=\textwidth]{Bilder/solution_16x16}
 	\end{minipage}
 	
 \end{center}
+The color bar on the side represents the amplitude of the solution.
+Where $N$ and $M$ are the cordinates of the solution matrix. In our case is the unite square given in the matrix assemble function.
+ 
 \end{document}
