@@ -101,5 +101,10 @@ int main() {
     std::cout << "maximum value: " << y[5] << std::endl;
     std::cout << "number of zeros: " << y[6] << std::endl; 
 
+    free(x);
+    free(y);
+    cudaFree(cuda_x);
+    cudaFree(cuda_y);
+
     return EXIT_SUCCESS;
 }

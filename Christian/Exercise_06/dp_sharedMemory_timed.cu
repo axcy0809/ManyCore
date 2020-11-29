@@ -105,5 +105,10 @@ int main() {
 
     std::cout << "Time elapsed: " << time_elapsed << std::endl << std::endl;
 
+    free(x);
+    free(y);
+    cudaFree(cuda_x);
+    cudaFree(cuda_y);
+
     return EXIT_SUCCESS;
 }
