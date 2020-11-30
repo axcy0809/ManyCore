@@ -79,9 +79,9 @@ int main() {
   int N = 5;
   int K = 3;
 
-  double *values = ( double *)malloc(sizeof( double) * 9);
-  int *colindices = (int*)malloc(sizeof(int) * 9);
-  int *offsets = (int*)malloc(sizeof(int) * 6);
+  double *values = ( double *)malloc(sizeof( double) * N*10);
+  int *colindices = (int*)malloc(sizeof(int) * N*10);
+  int *offsets = (int*)malloc(sizeof(int) * (N+1));
 
   double *x = ( double *)malloc(sizeof( double) * N);
   double *X = (double*)malloc(sizeof(double) * N*K);
@@ -146,38 +146,66 @@ int main() {
   double    *cuda_y;
   double    *cuda_Y;
 
-  cudaMalloc(&cuda_values, sizeof( double) * 9);
-  cudaMalloc(&cuda_colindices, sizeof( int) * 9);
-  cudaMalloc(&cuda_offsets, sizeof( int) * 6);
+  cudaMalloc(&cuda_values, sizeof( double) * N*10);
+  cudaMalloc(&cuda_colindices, sizeof( int) * N*10);
+  cudaMalloc(&cuda_offsets, sizeof( int) * (N+1));
   cudaMalloc(&cuda_x, sizeof( double) * N);
   cudaMalloc(&cuda_X, sizeof( double) * N*K);
   cudaMalloc(&cuda_y, sizeof( double) * N);
   cudaMalloc(&cuda_Y, sizeof( double) * N*K);
 
-  cudaMemcpy(cuda_values, values, sizeof( double) * 9, cudaMemcpyHostToDevice);
-  cudaMemcpy(cuda_colindices, colindices, sizeof( int) * 9, cudaMemcpyHostToDevice);
-  cudaMemcpy(cuda_offsets, offsets, sizeof( int) * 6, cudaMemcpyHostToDevice);
+  cudaMemcpy(cuda_values, values, sizeof( double) * N*10, cudaMemcpyHostToDevice);
+  cudaMemcpy(cuda_colindices, colindices, sizeof( int) * N*10, cudaMemcpyHostToDevice);
+  cudaMemcpy(cuda_offsets, offsets, sizeof( int) * (N+1), cudaMemcpyHostToDevice);
   cudaMemcpy(cuda_x, x, sizeof( double) * N, cudaMemcpyHostToDevice);
   cudaMemcpy(cuda_X, X, sizeof( double) * N*K, cudaMemcpyHostToDevice);
 
+  std::vector<double> timings1;
+    for(int reps=0; reps < 10; ++reps) {
+        tim1.reset();
+        for (int j = 0; j < K; j++) {
+          sparseVector<<<256, 256>>>(N, cuda_offsets, cuda_colindices, cuda_values, cuda_x, cuda_y);
+          cudaMemcpy(y, cuda_y, sizeof(double) * N, cudaMemcpyDeviceToHost);
+        }
+        timings1.push_back(tim1.get());
+    }
+  std::sort(timings1.begin(), timings1.end());
+  double time_elapsed1 = timings1[10/2];
+  std::cout << "Time elapsed vector: " << time_elapsed1 << std::endl << std::endl;
+
+
+
+
+
+
+  std::vector<double> timings2;
+    for(int reps=0; reps < 10; ++reps) {
+        tim2.reset();
+        sparseDenseRowMajor<<<256, 256>>>(N, K, cuda_offsets, cuda_colindices, cuda_values, cuda_X, cuda_Y);
+        cudaMemcpy(Y, cuda_Y, sizeof(double) * N*K, cudaMemcpyDeviceToHost);
+        timings2.push_back(tim2.get());
+    }
+  std::sort(timings2.begin(), timings2.end());
+  double time_elapsed2 = timings2[10/2];
+  std::cout << "Time elapsed row: " << time_elapsed2 << std::endl << std::endl;
+
+
+
+
+
+  std::vector<double> timings3;
+  for(int reps=0; reps < 10; ++reps) {
+      tim3.reset();
+      sparseDenseRowMajor<<<256, 256>>>(N, K, cuda_offsets, cuda_colindices, cuda_values, cuda_X, cuda_Y);
+      cudaMemcpy(Y, cuda_Y, sizeof(double) * N*K, cudaMemcpyDeviceToHost);
+      timings3.push_back(tim3.get());
+  }
+  std::sort(timings3.begin(), timings3.end());
+  double time_elapsed3 = timings3[10/2];
+  std::cout << "Time elapsed column: " << time_elapsed3 << std::endl << std::endl;
   
-  sparseVector<<<256, 256>>>(N, cuda_offsets, cuda_colindices, cuda_values, cuda_x, cuda_y);
-  cudaMemcpy(y, cuda_y, sizeof(double) * N, cudaMemcpyDeviceToHost);
 
-  sparseDenseRowMajor<<<256, 256>>>(N, K, cuda_offsets, cuda_colindices, cuda_values, cuda_X, cuda_Y);
-  cudaMemcpy(Y, cuda_Y, sizeof(double) * N*K, cudaMemcpyDeviceToHost);
   
-
-  std::cout << "x : " << std::endl;
-  printContainer(x, N);
-  std::cout << "Result : " << std::endl;
-  printContainer(y, N);
-
-  std::cout << std::endl;
-  std::cout << "X : " << std::endl;
-  printContainer(X, N*K);
-  std::cout << "Result : " << std::endl;
-  printContainer(Y, N*K);
 
   free(x);
   free(X);
