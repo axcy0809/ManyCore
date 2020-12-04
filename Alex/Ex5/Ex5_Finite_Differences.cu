@@ -440,6 +440,13 @@ void exclusive_scan(int const * input,
   free(csr_values);
 }
 
+template <typename T>
+void printContainer(T container, int N) {
+    for (int i = 0; i < N; i++) {
+        std::cout << container[i] << " | ";
+    }
+}
+
  
 int main() 
 {
@@ -490,6 +497,10 @@ int main()
   //timer.reset();
   //assemble_A_CPU(values, columns, row_offsets, N, M);
   //std::cout << "Time to assemble on CPU: " << timer.get() <<  std::endl;
+
+  printContainer(values, numberOfValues);
+  std::cout << std::endl;
+  printContainer(columns, numberOfValues);
 
   solve_system(N, M, row_offsets, values, columns, N);
 
