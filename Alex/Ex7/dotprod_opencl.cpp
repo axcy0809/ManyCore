@@ -25,7 +25,7 @@
 
 
     const char *my_opencl_program = ""
-    "__kernel void vec_add(__global double *x,\n"
+    "__kernel void vec_mult(__global double *x,\n"
     "                      __global double *y,\n"
     "                      __global double *result,\n"
     "                      unsigned int N\n)"
@@ -44,6 +44,21 @@
         }
 
     }
+
+    __global__ void GPU_dot (double *x, double *y, double *dot, unsigned int N)
+{
+    unsigned int ind = threadIdx.x + blockDim.x*blockIdx.x;
+    unsigned int str = blockDim.x*gridDim.x;
+
+    double tmpsum = 0.0;
+    while(ind < N)
+    {
+        tmpsum = x[ind]*y[ind];
+        ind += str;
+    }
+
+    dot[threadIdx.x] = tmpsum;
+}
 
 
     int main()
@@ -134,7 +149,7 @@
     //
     // Extract the only kernel in the program:
     //
-    cl_kernel my_kernel = clCreateKernel(prog, "vec_add", &err); OPENCL_ERR_CHECK(err);
+    cl_kernel my_kernel = clCreateKernel(prog, "vec_mult", &err); OPENCL_ERR_CHECK(err);
 
     std::cout << "Time to compile and create kernel: " << timer.get() << std::endl;
 
@@ -146,8 +161,9 @@
     //
     // Set up buffers on host:
     //
-    unsigned int H = 10000;
+    unsigned int H = 10;
     double CPU_time = 0;
+    double GPU_time = 0;
     double opencl_time = 0;
     unsigned int K = H;
     int anz = 100;
@@ -158,32 +174,53 @@
     std::vector<ScalarType> y(vector_size, 2.0);
     std::vector<ScalarType> result(vector_size, 0);
 
-    ScalarType *X_CPU, *Y_CPU, *dot_CPU;
-    X_CPU = (ScalarType*)malloc(sizeof(ScalarType) * N);
-    Y_CPU = (ScalarType*)malloc(sizeof(ScalarType) * N);
+    ScalarType *X, *Y, *dot_CPU, *dot_GPU;
+    ScalarType *cuda_X, *cuda_Y, *cuda_dot_GPU;
+    X = (ScalarType*)malloc(sizeof(ScalarType) * N);
+    Y = (ScalarType*)malloc(sizeof(ScalarType) * N);
     dot_CPU = (ScalarType*)malloc(sizeof(ScalarType) * N);
+    dot_GPU = (ScalarType*)malloc(sizeof(ScalarType) * 128);
     std::cout << "Vectorsize: " << N << std::endl;
-    
+
+    cudaMalloc(&cuda_X, N*sizeof(double));
+    cudaMalloc(&cuda_Y, N*sizeof(double));
+    cudaMalloc(&cuda_dot_GPU, 128*sizeof(double));
 
     for(std::size_t i = 0; i < vector_size; i++)
     {
-        X_CPU[i] = 2.;
-        Y_CPU[i] = 2.;
+        X[i] = 2.;
+        Y[i] = 2.;
         dot_CPU[i] = 0;
         refsum += x[i] * y[i];
     }
-    timer.reset();
-    for (int i = 0;i < anz; i++)
-    {
-            CPU_dot(X_CPU, Y_CPU, dot_CPU, N);
-    }
-    CPU_time = timer.get();
-    std::cout << "Time for CPU kernel: " << CPU_time/anz << std::endl;
 
     std::cout << std::endl;
     std::cout << "Vectors before kernel launch:" << std::endl;
     std::cout << "x: " << x[0] << " " << x[1] << " " << x[2] << " ..." << std::endl;
     std::cout << "y: " << y[0] << " " << y[1] << " " << y[2] << " ..." << std::endl;
+
+    cudaMemcpy(cuda_X, X, N*sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(cuda_Y, Y, N*sizeof(double), cudaMemcpyHostToDevice);
+    std::fill(dot_GPU, dot_GPU + (128), 0);
+
+    timer.reset();
+    for (int i = 0;i < anz; i++)
+    {
+            CPU_dot(X, Y, dot_CPU, N);
+    }
+    CPU_time = timer.get();
+    std::cout << "Time for CPU kernel: " << CPU_time/anz << std::endl;
+
+    timer.reset();
+    for (int i = 0;i < anz; i++)
+    {
+        GPU_dot<<<128, 128>>>(cuda_X, cuda_Y, cuda_dot_GPU, N);
+        cudaDeviceSynchronize();
+        cudaMemcpy(dot_GPU, cuda_dot_GPU, sizeof(double), cudaMemcpyDeviceToHost);
+    }
+    //cudaMemcpy(dot_GPU, cuda_dot_GPU, sizeof(double), cudaMemcpyDeviceToHost);
+    GPU_time = timer.get();
+    std::cout << "Time for GPU kernel: " << GPU_time/anz << std::endl;
 
     //
     // Now set up OpenCL buffers:
@@ -219,8 +256,10 @@
     }
     opencl_time = timer.get();
     std::cout << "Time for opencl kernel: " << opencl_time/anz << std::endl;
+    
 
-    std::cout << "opencl is " << CPU_time/opencl_time << " faster" << std::endl;
+    std::cout << "opencl is " << CPU_time/opencl_time << " faster than CPU" << std::endl;
+    std::cout << "CUDA is " << CPU_time/GPU_time << " faster than GPU" << std::endl;
 
 
 
@@ -242,14 +281,25 @@
     //
     double sum = 0;
     double CPU_sum = 0;
+    double GPU_sum = 0;
     for (std::size_t i = 0; i < vector_size; i++)
     {
         sum += result[i];
         CPU_sum += dot_CPU[i];
     }
+    for (int i = 0; i < 10; i++)
+    {
+        GPU_sum = GPU_sum + dot_GPU[i];
+        //std::cout << "dot: " << GPU_sum << "einz: " << dot_CPU[i] << std::endl;  
+        //std::cout << dot_GPU[i] + dot_GPU[i]  << std::endl;     
+    }
+    std::cout << "GPU dotprod: " << GPU_sum << std::endl;
     std::cout << "CPU dotprod: " << CPU_sum << std::endl;
     std::cout << "opencl dotprod: " << sum << std::endl;
     std::cout << "reference dotprod: " << refsum << std::endl;
+    std::cout << "GPU dotprod: " << dot_CPU[0] << std::endl;
+    std::cout << "GPU dotprod: " << dot_CPU[1] << std::endl;
+    std::cout << "GPU dotprod: " << dot_CPU[2] << std::endl;
     //
     // define outputstream
     //
