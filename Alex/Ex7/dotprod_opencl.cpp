@@ -8,7 +8,7 @@
 
     #include <fstream>
     #include <iostream>
-    #include <string>
+    #include <string> 
     #include <vector>
     #include <cmath>
     #include <stdexcept>
@@ -30,10 +30,13 @@
     "                      __global double *result,\n"
     "                      unsigned int N\n)"
     "{\n"
+    "   int d = 0;\n"
     "  for (unsigned int i  = get_global_id(0);\n"
     "                    i  < N;\n"
     "                    i += get_global_size(0))\n"
+    "{\n"
     "    result[i] = x[i] * y[i];\n"
+    "}\n"
     "}";   // you can have multiple kernels within a single OpenCL program. For simplicity, this OpenCL program contains only a single kernel.
 
     void CPU_dot(ScalarType *x, ScalarType *y, ScalarType *result, unsigned int N)
@@ -45,24 +48,1547 @@
 
     }
 
-    __global__ void GPU_dot (double *x, double *y, double *dot, unsigned int N)
-{
-    unsigned int ind = threadIdx.x + blockDim.x*blockIdx.x;
-    unsigned int str = blockDim.x*gridDim.x;
-
-    double tmpsum = 0.0;
-    while(ind < N)
+        __global__ void GPU_dot (double *x, double *y, double *dot, unsigned int N)
     {
-        tmpsum = x[ind]*y[ind];
-        ind += str;
+        unsigned int ind = threadIdx.x + blockDim.x*blockIdx.x;
+        unsigned int str = blockDim.x*gridDim.x;
+
+        double tmpsum = 0.0;
+        while(ind < N)
+        {
+            tmpsum = x[ind]*y[ind];
+            ind += str;
+        }
+
+        dot[threadIdx.x] = tmpsum;
     }
 
-    dot[threadIdx.x] = tmpsum;
-}
+    void diffKernel(int m)
+    {
+        if(m == 0)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "}";
+        }
+        if(m == 1)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 2)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 3)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 4)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 5)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 6)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 7)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 8)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 9)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 10)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 11)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 12)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 13)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 14)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 15)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 16)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 17)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 18)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 19)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 20)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 21)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 22)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 23)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 24)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 25)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 26)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 27)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 28)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 29)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 30)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+                if(m == 31)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 32)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 33)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 34)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 35)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 36)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 37)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 38)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 39)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        if(m == 40)
+        {
+            my_opencl_program = ""
+                "__kernel void vec_mult(__global double *x,\n"
+                "                      __global double *y,\n"
+                "                      __global double *result,\n"
+                "                      unsigned int N\n)"
+                "{\n"
+                "   int d = 0;\n"
+                "  for (unsigned int i  = get_global_id(0);\n"
+                "                    i  < N;\n"
+                "                    i += get_global_size(0))\n"
+                "{\n"
+                "    result[i] = x[i] * y[i];\n"
+                "}\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "d = 0;\n"
+                "}";
+        }
+        
+    }
 
 
     int main()
-    {
+{
     std::vector<unsigned int> vec_Ns{100, 1000};
 
     std::fstream csv_times;
@@ -71,6 +1597,13 @@
     std::string header = "N;CPU_time;opencl_time;factor";
         // to csv file
     csv_times << header << std::endl;
+
+    std::fstream csv_diffKernels;
+    std::string csv_diffKernels_name = "csv_diffKernels.csv";
+    csv_diffKernels.open(csv_diffKernels_name, std::fstream::out | std::fstream::trunc);
+    header = "M;compile_Time;retrieve_Time";
+        // to csv file
+    csv_diffKernels << header << std::endl;
 
     cl_int err;
 
@@ -114,8 +1647,104 @@
     cl_command_queue my_queue = clCreateCommandQueueWithProperties(my_context, my_device_id, 0, &err); OPENCL_ERR_CHECK(err);
 
 
+    /*
+    int M = 1;
+    char newKernel[source_len+1+(5*M)];
+    char addline[5] = {'d','=','0',';','\0'};
 
-    //
+        for(int i = 0; i < source_len-1; i++)
+        {
+            newKernel[i] = my_opencl_program[i];
+        }
+        for (int m = 0;m<M;m++)
+        {
+            for(int i = 0; i < 5; i++)
+            {
+                newKernel[source_len + i + m*5] = addline[i];
+                //std::cout << addline[i] << std::endl;
+                //std::cout << newKernel[source_len + i] << std::endl;
+            }
+        }
+
+        newKernel[source_len+1+(5*M)] = {'}'};
+        for(int i = 0; i < source_len+1+(5*M)+1; i++)
+        {
+            std::cout << newKernel[i] << std::endl;
+        }
+
+    //*my_opencl_program = newKernel;
+    strcpy(my_opencl_program, newKernel);
+    source_len = std::string(my_opencl_program).length();
+    std::cout << "acturalKernel: " << std::string(my_opencl_program) << std::endl;
+    */
+
+    //std::string newline = "d = ";
+    //std::string newKernel = "";
+    //std::string klam = "}";
+    //int k = 20;
+    //int M = 2;
+    //std::cout << "Kernel bevor transformation: " << std::string(my_opencl_program) << std::endl;
+    //for(int m = 0; m < M; m++)
+    //{
+    /*
+    if(m == 0)
+    {
+        my_opencl_program = ""
+            "__kernel void vec_mult(__global double *x,\n"
+            "                      __global double *y,\n"
+            "                      __global double *result,\n"
+            "                      unsigned int N\n)"
+            "{\n"
+            "   int d = 0;\n"
+            "  for (unsigned int i  = get_global_id(0);\n"
+            "                    i  < N;\n"
+            "                    i += get_global_size(0))\n"
+            "{\n"
+            "    result[i] = x[i] * y[i];\n"
+            "}\n"
+            "d = 0;\n"
+            "}";
+    }
+
+    if(m == 1)
+    {
+        my_opencl_program = ""
+            "__kernel void vec_mult(__global double *x,\n"
+            "                      __global double *y,\n"
+            "                      __global double *result,\n"
+            "                      unsigned int N\n)"
+            "{\n"
+            "   int d = 0;\n"
+            "  for (unsigned int i  = get_global_id(0);\n"
+            "                    i  < N;\n"
+            "                    i += get_global_size(0))\n"
+            "{\n"
+            "    result[i] = x[i] * y[i];\n"
+            "}\n"
+            "d = 0;\n"
+            "d = 0;\n"
+            "}";
+    }
+    */
+     
+        /*
+        newKernel = "";
+        for(int i = 0; i < source_len-1; i++)
+        {
+            newKernel.push_back(std::string(my_opencl_program)[i]);
+        }
+            newline = newline + std::to_string(k) + ";\n";
+            for (int j = 0; j < m;j++)
+            {
+                for(int i = 0; newline[i] != '\0'; i++) 
+                { 
+                    newKernel.push_back(newline[i]);
+                } 
+            }
+        newKernel.push_back(klam[0]);     
+        my_opencl_program = newKernel.c_str();
+        */
+        //
     /////////////////////////// Part 2: Create a program and extract kernels ///////////////////////////////////
     //
 
@@ -125,15 +1754,18 @@
     //
     // Build the program:
     //
+    cl_kernel my_kernel;
+    cl_program prog;
     size_t source_len = std::string(my_opencl_program).length();
-    cl_program prog = clCreateProgramWithSource(my_context, 1, &my_opencl_program, &source_len, &err);OPENCL_ERR_CHECK(err);
+    std::cout << " " << std::endl;
+    std::cout << " " << std::endl;
+    std::cout << " " << std::endl;
+    //std::cout << "Kernel after transformation: " << std::string(my_opencl_program) << std::endl;
+    source_len = std::string(my_opencl_program).length();
+
+    prog = clCreateProgramWithSource(my_context, 1, &my_opencl_program, &source_len, &err);OPENCL_ERR_CHECK(err);
     err = clBuildProgram(prog, 0, NULL, NULL, NULL, NULL);
-
-    //
-    // Print compiler errors if there was a problem:
-    //
     if (err != CL_SUCCESS) {
-
         char *build_log;
         size_t ret_val_size;
         err = clGetProgramBuildInfo(prog, my_device_id, CL_PROGRAM_BUILD_LOG, 0, NULL, &ret_val_size);
@@ -149,9 +1781,9 @@
     //
     // Extract the only kernel in the program:
     //
-    cl_kernel my_kernel = clCreateKernel(prog, "vec_mult", &err); OPENCL_ERR_CHECK(err);
 
-    std::cout << "Time to compile and create kernel: " << timer.get() << std::endl;
+    my_kernel = clCreateKernel(prog, "vec_mult", &err); OPENCL_ERR_CHECK(err);
+
 
 
     //
@@ -306,6 +1938,56 @@
     std::string sep = ";";
     csv_times << N << sep << CPU_time << sep << opencl_time << std::endl;
 
+    int M = 40;
+    std::vector<double> diffKernelcompileTime;
+    std::vector<double> diffKernelretrieveTime;
+    timer.reset();
+    for(int m = 0;m < M; m++)
+    {
+        diffKernel(m);
+        size_t source_len = std::string(my_opencl_program).length();
+        std::cout << " " << std::endl;
+        std::cout << " " << std::endl;
+        std::cout << " " << std::endl;
+        //std::cout << "Kernel after transformation: " << std::string(my_opencl_program) << std::endl;
+        source_len = std::string(my_opencl_program).length();
+
+        prog = clCreateProgramWithSource(my_context, 1, &my_opencl_program, &source_len, &err);OPENCL_ERR_CHECK(err);
+        err = clBuildProgram(prog, 0, NULL, NULL, NULL, NULL);
+        if (err != CL_SUCCESS) {
+            char *build_log;
+            size_t ret_val_size;
+            err = clGetProgramBuildInfo(prog, my_device_id, CL_PROGRAM_BUILD_LOG, 0, NULL, &ret_val_size);
+            build_log = (char *)malloc(sizeof(char) * (ret_val_size+1));
+            err = clGetProgramBuildInfo(prog, my_device_id, CL_PROGRAM_BUILD_LOG, ret_val_size, build_log, NULL);
+            build_log[ret_val_size] = '\0'; // terminate string
+            std::cout << "Log: " << build_log << std::endl;
+            free(build_log);
+            std::cout << "OpenCL program sources: " << std::endl << my_opencl_program << std::endl;
+            return EXIT_FAILURE;
+        }
+
+        //
+        // Extract the only kernel in the program:
+        //
+
+        my_kernel = clCreateKernel(prog, "vec_mult", &err); OPENCL_ERR_CHECK(err);
+        diffKernelcompileTime.push_back(timer.get());
+
+        clReleaseProgram(prog);
+        diffKernelretrieveTime.push_back(timer.get());
+    }
+    std::cout << "Time to compile and create kernel: " << timer.get() << std::endl;
+    for(int i = 0;i < M;i++)
+    {
+        std::cout << "Time to compile: " << i << "Kernels" << std::endl;
+        std::cout << diffKernelcompileTime[i] << std::endl;
+        std::cout << "Time to retrieve: " << i << "Kernels" << std::endl;
+        std::cout << diffKernelretrieveTime[i] << std::endl;
+        csv_diffKernels << i << sep << diffKernelcompileTime[i] << sep << diffKernelretrieveTime[i] << std::endl;
+    }
+    
+
     clReleaseMemObject(ocl_x);
     clReleaseMemObject(ocl_y);
     clReleaseMemObject(ocl_result);
@@ -319,6 +2001,10 @@
     std::cout << "# My first OpenCL application finished successfully!" << std::endl;
     std::cout << "#" << std::endl;
     csv_times.close();
+    csv_diffKernels.close();
     std::cout << "\nRuntimes in csv form can be found here\nhttps://gtx1080.360252.org/2020/ex7/" + csv_times_name << std::endl;
+    std::cout << "\nRuntimes in csv form can be found here\nhttps://gtx1080.360252.org/2020/ex7/" + csv_diffKernels_name << std::endl;
+
+
     return EXIT_SUCCESS;
-    }
+}
