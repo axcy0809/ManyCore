@@ -150,11 +150,17 @@ std::cout << "Time for CPU kernel: " << CPU_time/anz << std::endl;
 \end{minipage}	
 \end{center}
 
+\noindent
+On the left we could see that the different runtimes for the same number of entries of a vector and apply the dot-product on it. For the GPU-times it is not clear why the times are like this. I also switch the mode of the machine to the GTX 1080. On the right side I plotted the different factros which one is faster opencl or CPU and GPU or CPU. At a certain point opencl is over 200 times faster than the CPU one.
+
 \begin{center}
 	\begin{minipage}[t]{0.49\textwidth}
 		\includegraphics[width=\textwidth]{Bilder/Time_to_compile_and_clean}
 	\end{minipage}
 \end{center}
 
+\noindent
+The time to create the kernels is linear with the numbers of $M$ different kernels and also the time to retrive it. The second case is much faster than the fist.\\
+For 1.4 I tried first to write a routine which adds a line with respect to a given number of $M$ to creat every time a different kernel and to measure the time. I tried this with a string implementation. That does not work prooaly because the decleration at the begin of the provided code is a $const\,\,\,char$ and I got errors that I could not change a $const\,\,\,char$ for that. Then I tried to implement it with $char$ datatyps and that also does not work. So I wrote 100 different kernels with if conditions and add a line "d = 0;" which does not affect the implementation from the dot product and so I measures the time. My code is 4500 lines long so dont affraid I could not find a better solution.
 	
 \end{document}
