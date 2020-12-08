@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2020.4.18)  8 DEC 2020 11:27
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2020.4.18)  8 DEC 2020 15:54
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -594,12 +594,43 @@ Package pdftex.def Info: Bilder/Time_to_compile_and_clean.png  used on input li
 ne 158.
 (pdftex.def)             Requested size: 230.0431pt x 176.94725pt.
  [3 <./Bilder/Runtime_dotProduct.png> <./Bilder/diff_factor.png>]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 166.
- [4 <./Bilder/Time_to_compile_and_clean.png>]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 166.
+Overfull \hbox (10.1445pt too wide) in paragraph at lines 171--172
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+ []
+
+
+Overfull \hbox (16.71457pt too wide) in paragraph at lines 172--173
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
+][] 
+ []
+
+
+Overfull \hbox (3.57443pt too wide) in paragraph at lines 173--174
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+
+ []
+
+
+Overfull \hbox (3.57443pt too wide) in paragraph at lines 182--183
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
+][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
+[][][][][] 
+ []
+
+[4 <./Bilder/Time_to_compile_and_clean.png>]
+<Bilder/Runtime_MatVec_product_opencl.png, id=143, 939.51pt x 722.7pt>
+File: Bilder/Runtime_MatVec_product_opencl.png Graphic file (type png)
+<use Bilder/Runtime_MatVec_product_opencl.png>
+Package pdftex.def Info: Bilder/Runtime_MatVec_product_opencl.png  used on inpu
+t line 192.
+(pdftex.def)             Requested size: 230.0431pt x 176.94725pt.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 197.
+ [5 <./Bilder/Runtime_MatVec_product_opencl.png>]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 197.
  (./Exercise7.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 166.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 166.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 197.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 197.
 Package rerunfilecheck Info: File `Exercise7.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
 
@@ -610,25 +641,25 @@ LaTeX Font Warning: Size substitutions with differences
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 166.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 197.
  ) 
 Here is how much of TeX's memory you used:
- 9787 strings out of 492609
- 137123 string characters out of 6131462
+ 9817 strings out of 492609
+ 137654 string characters out of 6131462
  450292 words of memory out of 5000000
- 13485 multiletter control sequences out of 15000+600000
+ 13489 multiletter control sequences out of 15000+600000
  10713 words of font info for 40 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 34i,12n,60p,722b,1848s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 34i,12n,60p,728b,1848s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texl
 ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/tex
 mf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on Exercise7.pdf (4 pages, 183295 bytes).
+Output written on Exercise7.pdf (5 pages, 206279 bytes).
 PDF statistics:
- 158 PDF objects out of 1000 (max. 8388607)
- 139 compressed objects within 2 object streams
- 91 named destinations out of 1000 (max. 500000)
- 16 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 193 PDF objects out of 1000 (max. 8388607)
+ 171 compressed objects within 2 object streams
+ 116 named destinations out of 1000 (max. 500000)
+ 21 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -151,7 +151,7 @@ std::cout << "Time for CPU kernel: " << CPU_time/anz << std::endl;
 \end{center}
 
 \noindent
-On the left we could see that the different runtimes for the same number of entries of a vector and apply the dot-product on it. For the GPU-times it is not clear why the times are like this. I also switch the mode of the machine to the GTX 1080. On the right side I plotted the different factros which one is faster opencl or CPU and GPU or CPU. At a certain point opencl is over 200 times faster than the CPU one.
+On the left we could see that the different runtimes for the same number of entries of a vector and apply the dot-product on it. For the GPU-times it is not clear why the times are like this. I also switch the mode of the machine to the GTX 1080. On the right side I plotted the different factors which one is faster opencl or CPU and GPU or CPU. At a certain point opencl is over 200 times faster than the CPU one.
 
 \begin{center}
 	\begin{minipage}[t]{0.49\textwidth}
@@ -160,7 +160,38 @@ On the left we could see that the different runtimes for the same number of entr
 \end{center}
 
 \noindent
-The time to create the kernels is linear with the numbers of $M$ different kernels and also the time to retrive it. The second case is much faster than the fist.\\
-For 1.4 I tried first to write a routine which adds a line with respect to a given number of $M$ to creat every time a different kernel and to measure the time. I tried this with a string implementation. That does not work prooaly because the decleration at the begin of the provided code is a $const\,\,\,char$ and I got errors that I could not change a $const\,\,\,char$ for that. Then I tried to implement it with $char$ datatyps and that also does not work. So I wrote 100 different kernels with if conditions and add a line "d = 0;" which does not affect the implementation from the dot product and so I measures the time. My code is 4500 lines long so dont affraid I could not find a better solution.
-	
+The time to create the kernels is linear with the numbers of $M$ different kernels and also the time to retrieve it. The second case is much faster than the fist.\\
+For 1.4 I tried first to write a routine which adds a line with respect to a given number of $M$ to create every time a different kernel and to measure the time. I tried this with a string implementation. That does not work probably because the declaration at the beginning of the provided code is a $const\,\,\,char$ and I got errors that I could not change a $const\,\,\,char$ for that. Then I tried to implement it with $char$ datatyps and that also does not work. So I wrote 100 different kernels with if conditions and add a line "d = 0;" which does not affect the implementation from the dot product, and so I measure the time. My code is 4500 lines long so don't afraid I could not find a better solution.
+\section*{Example 2 Opencl Dot-product (3 Points)}
+\subsection*{opencl kernel}
+\begin{lstlisting}[language=C++, caption={kernel for sparce matrix prod}]
+const char *my_opencl_program = ""
+"#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n"    
+"__kernel void csr_matvec_product_opencl(unsigned int N,\n"
+"                                        __global int *csr_rowoffsets,\n"
+"                                        __global int  *csr_colindices,\n"
+"                                        __global double *csr_values,\n"
+"                                        __global double *x,\n"
+"                                        __global double *y)\n"
+"{\n"
+"  for (unsigned int i  = get_global_id(0);\n"
+"                    i  < N;\n"
+"                    i += get_global_size(0))\n"
+"   {\n"
+"           double value = 0;\n"
+"           for (int j=csr_rowoffsets[i]; j<csr_rowoffsets[i+1]; ++j)\n"
+"           value += csr_values[j] * x[csr_colindices[j]];\n"
+"                                                         \n"
+"           y[i] = value;\n"
+"    }\n"
+"}";
+\end{lstlisting}
+\subsection*{Benchmark}	
+\begin{center}
+	\begin{minipage}[t]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Bilder/Runtime_MatVec_product_opencl}
+	\end{minipage}
+\end{center}
+\noindent
+I do not know how to implement the second kernel so I benchmarked only the form point 1 with different max numbers of zero and a fixed number of $100 \times 100$ unknowns. I also had an\\ SEGMENTATION FAULT for the second strategy to initialize the matrix that's the reason why I started the benchmark at 2000 (orange line). I also include a function to control if the solution is correct.
 \end{document}
