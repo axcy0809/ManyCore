@@ -5,6 +5,7 @@
 #include "generate.hpp"
 #include "timer.hpp"
 #include <stdexcept>
+#include <fstream>
 
 #ifdef __APPLE__
 #include <OpenCL/cl.h>
@@ -202,129 +203,145 @@ int main()
   /////////////////////////// Part 3: Create memory buffers ///////////////////////////////////
   //
 
-  int points_per_direction = 4;
-  int max_nonzeros_per_row = 4;
-  size_t N = points_per_direction * points_per_direction; // number of rows and columns
+  /////////////////////////////////////// Benchmark Start //////////////////////////////////////
+  int points_per_direction = 100; //fixed the nummber
 
-  int *csr_rowoffsets =    (int*)malloc(sizeof(double) * (N+1));
-  int *csr_colindices =    (int*)malloc(sizeof(double) * max_nonzeros_per_row * N);
-  double *csr_values  = (double*)malloc(sizeof(double) * max_nonzeros_per_row * N);
+  int max_nonzeros_per_row = 5;
 
-  generate_fdm_laplace(points_per_direction, csr_rowoffsets, csr_colindices, csr_values);
-  std::cout << "Output from the set matrix laplace: " << std::endl;
-  for (int i = 0; i < N; i++)
-  {
-    std::cout << "i: " << i << " | " << csr_values[i] << std::endl;
-  }
-  //
-  // Allocate vectors:
-  //
-  double *x_ref = (double*)malloc(sizeof(double) * N); std::fill(x_ref, x_ref + N, 1);
-  double *y_ref = (double*)malloc(sizeof(double) * N); std::fill(y_ref, y_ref + N, 0);
+  //for (int& max_nonzeros_per_row : vec_Ms)
+  //{
+    size_t N = points_per_direction * points_per_direction; // number of rows and columns
 
-  //double *x = (double*)malloc(sizeof(double) * N); std::fill(x, x + N, 1);
-  //double *y = (double*)malloc(sizeof(double) * N); std::fill(y, y + N, 0);
+    int *csr_rowoffsets =    (int*)malloc(sizeof(double) * (N+1));
+    int *csr_colindices =    (int*)malloc(sizeof(double) * max_nonzeros_per_row * N);
+    double *csr_values  = (double*)malloc(sizeof(double) * max_nonzeros_per_row * N);
 
-  std::vector<ScalarType> x(N, 1.0);
-  std::vector<ScalarType> y(N, 0.0);
+    generate_fdm_laplace(points_per_direction, csr_rowoffsets, csr_colindices, csr_values);
 
-  csr_matvec_product(N, csr_rowoffsets, csr_colindices, csr_values, x_ref, y_ref);
-  std::cout << "Solution: " << std::endl;
-  for (int i = 0; i < N; i++)
-  {
-    std::cout << "i: " << i << " | " << y_ref[i] << std::endl;
-  }
+    //generate_matrix2(points_per_direction, csr_rowoffsets, csr_colindices, csr_values);
+    /*
+    std::cout << "Output from the set matrix laplace: " << std::endl;
+    for (int i = 0; i < N; i++)
+    {
+      std::cout << "i: " << i << " | " << csr_values[i] << std::endl;
+    }
+    */
+    //
+    // Allocate vectors:
+    //
+    double *x_ref = (double*)malloc(sizeof(double) * N); std::fill(x_ref, x_ref + N, 1);
+    double *y_ref = (double*)malloc(sizeof(double) * N); std::fill(y_ref, y_ref + N, 0);
 
-  //
-  // Set up buffers on host:
-  //
+    //double *x = (double*)malloc(sizeof(double) * N); std::fill(x, x + N, 1);
+    //double *y = (double*)malloc(sizeof(double) * N); std::fill(y, y + N, 0);
 
-  cl_uint vector_size = N;
+    std::vector<ScalarType> x(N, 1.0);
+    std::vector<ScalarType> y(N, 0.0);
 
-  //
-  // Now set up OpenCL buffers:
-  //
-  cl_mem ocl_x = clCreateBuffer(my_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, vector_size * sizeof(ScalarType), &(x[0]), &err); OPENCL_ERR_CHECK(err);
-  cl_mem ocl_y = clCreateBuffer(my_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, vector_size * sizeof(ScalarType), &(y[0]), &err); OPENCL_ERR_CHECK(err);
-  cl_mem ocl_csr_rowoffsets = clCreateBuffer(my_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, (N+1) * sizeof(int), &(csr_rowoffsets[0]), &err); OPENCL_ERR_CHECK(err);
-  cl_mem ocl_csr_colindices = clCreateBuffer(my_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, max_nonzeros_per_row * N * sizeof(int), &(csr_colindices[0]), &err); OPENCL_ERR_CHECK(err);
-  cl_mem ocl_csr_values = clCreateBuffer(my_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, max_nonzeros_per_row * N * sizeof(ScalarType), &(csr_values[0]), &err); OPENCL_ERR_CHECK(err);
+    csr_matvec_product(N, csr_rowoffsets, csr_colindices, csr_values, x_ref, y_ref);
+    /*
+    std::cout << "Solution: " << std::endl;
+    for (int i = 0; i < N; i++)
+    {
+      std::cout << "i: " << i << " | " << y_ref[i] << std::endl;
+    }
+    */
 
+    //
+    // Set up buffers on host:
+    //
 
-  //
-  /////////////////////////// Part 4: Run kernel ///////////////////////////////////
-  //
-  size_t  local_size = 128;
-  size_t global_size = 128*128;
+    cl_uint vector_size = N;
 
-  //
-  // Set kernel arguments:
-  //
-  err = clSetKernelArg(my_kernel, 0, sizeof(cl_uint), (void*)&vector_size); OPENCL_ERR_CHECK(err);
-  err = clSetKernelArg(my_kernel, 1, sizeof(cl_mem), (void*)&ocl_csr_rowoffsets); OPENCL_ERR_CHECK(err);
-  err = clSetKernelArg(my_kernel, 2, sizeof(cl_mem),  (void*)&ocl_csr_colindices); OPENCL_ERR_CHECK(err);
-  err = clSetKernelArg(my_kernel, 3, sizeof(cl_mem),  (void*)&ocl_csr_values); OPENCL_ERR_CHECK(err);
-  err = clSetKernelArg(my_kernel, 4, sizeof(cl_mem),  (void*)&ocl_x); OPENCL_ERR_CHECK(err);
-  err = clSetKernelArg(my_kernel, 5, sizeof(cl_mem),  (void*)&ocl_y); OPENCL_ERR_CHECK(err);
-
-  //
-  // Enqueue kernel in command queue:
-  //
-  err = clEnqueueNDRangeKernel(my_queue, my_kernel, 1, NULL, &global_size, &local_size, 0, NULL, NULL); OPENCL_ERR_CHECK(err);
-
-  // wait for all operations in queue to finish:
-  err = clFinish(my_queue); OPENCL_ERR_CHECK(err);
+    //
+    // Now set up OpenCL buffers:
+    //
+    cl_mem ocl_x = clCreateBuffer(my_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, vector_size * sizeof(ScalarType), &(x[0]), &err); OPENCL_ERR_CHECK(err);
+    cl_mem ocl_y = clCreateBuffer(my_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, vector_size * sizeof(ScalarType), &(y[0]), &err); OPENCL_ERR_CHECK(err);
+    cl_mem ocl_csr_rowoffsets = clCreateBuffer(my_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, (N+1) * sizeof(int), &(csr_rowoffsets[0]), &err); OPENCL_ERR_CHECK(err);
+    cl_mem ocl_csr_colindices = clCreateBuffer(my_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, max_nonzeros_per_row * N * sizeof(int), &(csr_colindices[0]), &err); OPENCL_ERR_CHECK(err);
+    cl_mem ocl_csr_values = clCreateBuffer(my_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, max_nonzeros_per_row * N * sizeof(ScalarType), &(csr_values[0]), &err); OPENCL_ERR_CHECK(err);
 
 
-  //
-  /////////////////////////// Part 5: Get data from OpenCL buffer ///////////////////////////////////
-  //
+    //
+    /////////////////////////// Part 4: Run kernel ///////////////////////////////////
+    //
+    std::cout << std::endl;
+    std::cout << std::endl;
+    std::cout << std::endl;
+    size_t  local_size = 128;
+    size_t global_size = 128*128;
+    int anz = 100;
+    double opencl_time;
+    for (int i = 0;i < anz; i++)
+    {
+      //
+      // Set kernel arguments:
+      //
+      err = clSetKernelArg(my_kernel, 0, sizeof(cl_uint), (void*)&vector_size); OPENCL_ERR_CHECK(err);
+      err = clSetKernelArg(my_kernel, 1, sizeof(cl_mem), (void*)&ocl_csr_rowoffsets); OPENCL_ERR_CHECK(err);
+      err = clSetKernelArg(my_kernel, 2, sizeof(cl_mem),  (void*)&ocl_csr_colindices); OPENCL_ERR_CHECK(err);
+      err = clSetKernelArg(my_kernel, 3, sizeof(cl_mem),  (void*)&ocl_csr_values); OPENCL_ERR_CHECK(err);
+      err = clSetKernelArg(my_kernel, 4, sizeof(cl_mem),  (void*)&ocl_x); OPENCL_ERR_CHECK(err);
+      err = clSetKernelArg(my_kernel, 5, sizeof(cl_mem),  (void*)&ocl_y); OPENCL_ERR_CHECK(err);
 
-  err = clEnqueueReadBuffer(my_queue, ocl_y, CL_TRUE, 0, sizeof(ScalarType) * y.size(), &(y[0]), 0, NULL, NULL); OPENCL_ERR_CHECK(err);
+      //
+      // Enqueue kernel in command queue:
+      //
+      err = clEnqueueNDRangeKernel(my_queue, my_kernel, 1, NULL, &global_size, &local_size, 0, NULL, NULL); OPENCL_ERR_CHECK(err);
 
-  std::cout << std::endl;
-  for (int i = 0; i < N; i++)
-  {
-    std::cout << "i: " << i << " | " << y[i] << std::endl;
-  }
-  std::cout << std::endl;
-  std::cout << std::endl;
-  diff_in_solution(y,y_ref,N);
-
-  //
-  // cleanup
-  //
-  clReleaseMemObject(ocl_x);
-  clReleaseMemObject(ocl_y);
-  clReleaseProgram(prog);
-  clReleaseCommandQueue(my_queue);
-  clReleaseContext(my_context);
-
-
-
-
-
-
-
-
-
-
-  
+      // wait for all operations in queue to finish:
+      err = clFinish(my_queue); OPENCL_ERR_CHECK(err);
+    }
+    opencl_time = timer.get();
+    std::cout << "Time for opencl kernel to do the matvec prod: " << opencl_time/anz << std::endl;
 
 
+    //
+    /////////////////////////// Part 5: Get data from OpenCL buffer ///////////////////////////////////
+    //
 
-  /*
-  std::cout << "# Benchmarking finite difference matrix" << std::endl;
-  benchmark_matvec(100, 5, generate_fdm_laplace); // 100*100 unknowns, finite difference matrix
+    err = clEnqueueReadBuffer(my_queue, ocl_y, CL_TRUE, 0, sizeof(ScalarType) * y.size(), &(y[0]), 0, NULL, NULL); OPENCL_ERR_CHECK(err);
 
-  std::cout << "# Benchmarking special matrix" << std::endl;
-  benchmark_matvec(100, 2000, generate_matrix2);     // 100*100 unknowns, special matrix with 200-2000 nonzeros per row
-  */
-  free(x_ref);
-  free(y_ref);
-  free(csr_rowoffsets);
-  free(csr_colindices);
-  free(csr_values);
+    std::cout << std::endl;
+    /*
+    for (int i = 0; i < N; i++)
+    {
+      std::cout << "i: " << i << " | " << y[i] << std::endl;
+    }
+    */
+
+    std::cout << "Number of max zeros: " << max_nonzeros_per_row << std::endl;
+    diff_in_solution(y,y_ref,N);
+
+    //
+    // cleanup
+    //
+    clReleaseMemObject(ocl_x);
+    clReleaseMemObject(ocl_y);
+    clReleaseMemObject(ocl_csr_rowoffsets);
+    clReleaseMemObject(ocl_csr_colindices);
+    clReleaseMemObject(ocl_csr_values);
+
+
+    clReleaseProgram(prog);
+    clReleaseCommandQueue(my_queue);
+    clReleaseContext(my_context);
+
+
+    /*
+    std::cout << "# Benchmarking finite difference matrix" << std::endl;
+    benchmark_matvec(100, 5, generate_fdm_laplace); // 100*100 unknowns, finite difference matrix
+
+    std::cout << "# Benchmarking special matrix" << std::endl;
+    benchmark_matvec(100, 2000, generate_matrix2);     // 100*100 unknowns, special matrix with 200-2000 nonzeros per row
+    */
+    free(x_ref);
+    free(y_ref);
+    free(csr_rowoffsets);
+    free(csr_colindices);
+    free(csr_values);
+  //}
 
   return EXIT_SUCCESS;
 }
