@@ -14,10 +14,16 @@ int main(void) {
 
 
   // transfer data to the device
-  thrust::device_vector<double> d_x= h_x;
-  thrust::device_vector<double> d_y= h_y;
+  thrust::device_vector<double> d_x = h_x;
+  thrust::device_vector<double> d_y = h_y;
+  thrust::device_vector<double> d_arg1;
+  thrust::device_vector<double> d_arg2;
 
-  double z = thrust::inner_product(d_x+d_y, d_x-d_y);
+
+  thrust::transform(d_x.begin(), d_x.end(), d_y.begin(), d_arg1.begin(), thrust::plus<double>());
+  thrust::transform(d_x.begin(), d_x.end(), d_y.begin(), d_arg2.begin(), thrust::minus<double>());
+
+  double z = thrust::inner_product(d_x.begin(), d_x.end(), d_y.begin(), 0);
 
   std::cout << "Inner Product = " << z << std::endl;
 
